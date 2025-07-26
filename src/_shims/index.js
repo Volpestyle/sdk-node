@@ -2,7 +2,7 @@
  * Disclaimer: modules in _shims aren't intended to be imported by SDK users.
  */
 const shims = require('./registry');
-const auto = require('@browserbasehq/sdk/_shims/auto/runtime');
+const auto = require('@wallcrawler/sdk/_shims/auto/runtime');
 exports.init = () => {
   if (!shims.kind) shims.setShims(auto.getRuntime(), { auto: true });
 };

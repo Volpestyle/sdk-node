@@ -1,13 +1,13 @@
 {
-  "name": "@browserbasehq/sdk",
+  "name": "@wallcrawler/sdk",
   "version": "2.6.0",
-  "description": "The official Node.js library for the Browserbase API",
-  "author": "Browserbase <support@browserbase.com>",
+  "description": "The official Node.js library for the Wallcrawler API",
+  "author": "Wallcrawler",
   "types": "dist/index.d.ts",
   "main": "dist/index.js",
   "type": "commonjs",
-  "repository": "github:browserbase/sdk-node",
-  "packageManager": "yarn@1.22.22",
+  "repository": "github:Volpestyle/sdk-node",
+  "packageManager": "pnpm@9.15.0",
   "files": [
     "**/*"
   ],
