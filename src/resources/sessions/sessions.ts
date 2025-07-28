@@ -87,7 +87,7 @@ export interface Session {
   /**
    * The region where the Session is running.
    */
-  region: 'us-west-2' | 'us-east-1' | 'eu-central-1' | 'ap-southeast-1';
+  region: 'us-east-1' | 'us-west-2' | 'eu-central-1' | 'ap-southeast-1';
 
   startedAt: string;
 
@@ -175,7 +175,7 @@ export interface SessionCreateResponse {
   /**
    * The region where the Session is running.
    */
-  region: 'us-west-2' | 'us-east-1' | 'eu-central-1' | 'ap-southeast-1';
+  region: 'us-east-1' | 'us-west-2' | 'eu-central-1' | 'ap-southeast-1';
 
   /**
    * HTTP URL to connect to the Session.
@@ -242,7 +242,7 @@ export interface SessionRetrieveResponse {
   /**
    * The region where the Session is running.
    */
-  region: 'us-west-2' | 'us-east-1' | 'eu-central-1' | 'ap-southeast-1';
+  region: 'us-east-1' | 'us-west-2' | 'eu-central-1' | 'ap-southeast-1';
 
   startedAt: string;
 
@@ -323,7 +323,7 @@ export interface SessionCreateParams {
   /**
    * The region where the Session should run.
    */
-  region?: 'us-west-2' | 'us-east-1' | 'eu-central-1' | 'ap-southeast-1';
+  region?: 'us-east-1' | 'us-west-2' | 'eu-central-1' | 'ap-southeast-1';
 
   /**
    * Duration in seconds after which the session will automatically end. Defaults to

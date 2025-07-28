@@ -1,17 +1,54 @@
-# Browserbase Node API Library
+# Wallcrawler Node API Library
 
-[![NPM version](https://img.shields.io/npm/v/@browserbasehq/sdk.svg)](https://npmjs.org/package/@browserbasehq/sdk) ![npm bundle size](https://img.shields.io/bundlephobia/minzip/@browserbasehq/sdk)
+[![NPM version](https://img.shields.io/npm/v/@wallcrawler/sdk.svg)](https://npmjs.org/package/@wallcrawler/sdk) ![npm bundle size](https://img.shields.io/bundlephobia/minzip/@wallcrawler/sdk)
 
-This library provides convenient access to the Browserbase REST API from server-side TypeScript or JavaScript.
+This library provides convenient access to the Wallcrawler REST API from server-side TypeScript or JavaScript. Wallcrawler is a self-hosted, AWS-based browser automation platform that provides Browserbase-compatible APIs with enterprise-grade reliability and scalability.
 
-The REST API documentation can be found on [docs.browserbase.com](https://docs.browserbase.com). The full API of this library can be found in [api.md](api.md).
+The REST API documentation can be found in the [docs](../../docs) directory. The full API of this library can be found in [api.md](api.md).
 
-It is generated with [Stainless](https://www.stainless.com/).
+This library is adapted from the original Browserbase SDK and enhanced for Wallcrawler's event-driven architecture.
+
+## Wallcrawler: Self-Hosted Browser Automation
+
+Wallcrawler is a serverless browser automation platform built on AWS that provides Browserbase-compatible APIs with enhanced capabilities:
+
+### Key Features
+
+- **🚀 Event-Driven Architecture**: Built on AWS EventBridge for reliability and scalability
+- **🔧 Self-Hosted**: Deploy on your own AWS infrastructure with full control
+- **🎯 Stagehand Compatible**: Drop-in replacement for Browserbase in Stagehand applications
+- **🔄 Dual Mode Support**:
+  - **API Mode**: Full proxy through Wallcrawler APIs with streaming responses
+  - **Direct Mode**: Direct Chrome DevTools Protocol (CDP) access for maximum privacy
+- **📡 WebSocket Streaming**: Real-time browser viewport streaming
+- **⚡ Serverless Architecture**: AWS Lambda functions with automatic scaling
+- **🛡️ Enterprise Ready**: Dead letter queues, retry mechanisms, and comprehensive monitoring
+
+### Architecture Overview
+
+Wallcrawler runs on AWS infrastructure using:
+- **AWS Lambda**: API handlers and session management
+- **AWS ECS Fargate**: Browser containers running Chrome with CDP
+- **AWS EventBridge**: Event-driven workflow orchestration
+- **AWS API Gateway**: RESTful API endpoints
+- **Redis**: Real-time state management and pub/sub messaging
+
+### Differences from Browserbase
+
+| Feature | Browserbase | Wallcrawler |
+|---------|-------------|-------------|
+| **Hosting** | SaaS Platform | Self-hosted on AWS |
+| **Architecture** | Proprietary | Event-driven with EventBridge |
+| **Browser Runtime** | Managed service | ECS Fargate containers |
+| **API Compatibility** | Native | Browserbase-compatible |
+| **Data Privacy** | Third-party | Your AWS account |
+| **Scaling** | Automatic | AWS auto-scaling |
+| **Customization** | Limited | Full infrastructure control |
 
 ## Installation
 
 ```sh
-npm install @browserbasehq/sdk
+npm install @wallcrawler/sdk
 ```
 
 ## Usage
@@ -20,19 +57,44 @@ The full API of this library can be found in [api.md](api.md).
 
 <!-- prettier-ignore -->
 ```js
-import Browserbase from '@browserbasehq/sdk';
+import Wallcrawler from '@wallcrawler/sdk';
 
-const client = new Browserbase({
-  apiKey: process.env['BROWSERBASE_API_KEY'], // This is the default and can be omitted
+const client = new Wallcrawler({
+  apiKey: process.env['WALLCRAWLER_API_KEY'], // Your Wallcrawler API key
+  baseURL: process.env['WALLCRAWLER_BASE_URL'], // Your Wallcrawler API base URL
 });
 
 async function main() {
   const session = await client.sessions.create({ projectId: 'your_project_id' });
 
   console.log(session.id);
+  console.log(session.connectUrl); // WebSocket URL for CDP connection
 }
 
 main();
+```
+
+### Using with Stagehand
+
+Wallcrawler provides seamless integration with Stagehand:
+
+```js
+import { Stagehand } from '@wallcrawler/stagehand';
+
+const stagehand = new Stagehand({
+  env: 'WALLCRAWLER',
+  // Wallcrawler-specific options
+  projectId: process.env['WALLCRAWLER_PROJECT_ID'],
+  apiKey: process.env['WALLCRAWLER_API_KEY'],
+  baseURL: process.env['WALLCRAWLER_BASE_URL'],
+});
+
+await stagehand.init();
+
+// Use Stagehand APIs as normal - they'll automatically use Wallcrawler
+await stagehand.page.goto('https://example.com');
+await stagehand.act({ action: 'click the login button' });
+const data = await stagehand.extract({ instruction: 'get the page title' });
 ```
 
 ### Request & Response types
@@ -41,15 +103,16 @@ This library includes TypeScript definitions for all request params and response
 
 <!-- prettier-ignore -->
 ```ts
-import Browserbase from '@browserbasehq/sdk';
+import Wallcrawler from '@wallcrawler/sdk';
 
-const client = new Browserbase({
-  apiKey: process.env['BROWSERBASE_API_KEY'], // This is the default and can be omitted
+const client = new Wallcrawler({
+  apiKey: process.env['WALLCRAWLER_API_KEY'],
+  baseURL: process.env['WALLCRAWLER_BASE_URL'],
 });
 
 async function main() {
-  const params: Browserbase.SessionCreateParams = { projectId: 'your_project_id' };
-  const session: Browserbase.SessionCreateResponse = await client.sessions.create(params);
+  const params: Wallcrawler.SessionCreateParams = { projectId: 'your_project_id' };
+  const session: Wallcrawler.SessionCreateResponse = await client.sessions.create(params);
 }
 
 main();
@@ -69,9 +132,12 @@ Request parameters that correspond to file uploads can be passed in many differe
 ```ts
 import fs from 'fs';
 import fetch from 'node-fetch';
-import Browserbase, { toFile } from '@browserbasehq/sdk';
+import Wallcrawler, { toFile } from '@wallcrawler/sdk';
 
-const client = new Browserbase();
+const client = new Wallcrawler({
+  apiKey: process.env['WALLCRAWLER_API_KEY'],
+  baseURL: process.env['WALLCRAWLER_BASE_URL'],
+});
 
 // If you have access to Node `fs` we recommend using `fs.createReadStream()`:
 await client.extensions.create({ file: fs.createReadStream('/path/to/file') });
@@ -97,7 +163,7 @@ a subclass of `APIError` will be thrown:
 ```ts
 async function main() {
   const session = await client.sessions.create({ projectId: 'your_project_id' }).catch(async (err) => {
-    if (err instanceof Browserbase.APIError) {
+    if (err instanceof Wallcrawler.APIError) {
       console.log(err.status); // 400
       console.log(err.name); // BadRequestError
       console.log(err.headers); // {server: 'nginx', ...}
@@ -134,7 +200,9 @@ You can use the `maxRetries` option to configure or disable this:
 <!-- prettier-ignore -->
 ```js
 // Configure the default for all requests:
-const client = new Browserbase({
+const client = new Wallcrawler({
+  apiKey: process.env['WALLCRAWLER_API_KEY'],
+  baseURL: process.env['WALLCRAWLER_BASE_URL'],
   maxRetries: 0, // default is 2
 });
 
@@ -151,7 +219,9 @@ Requests time out after 1 minute by default. You can configure this with a `time
 <!-- prettier-ignore -->
 ```ts
 // Configure the default for all requests:
-const client = new Browserbase({
+const client = new Wallcrawler({
+  apiKey: process.env['WALLCRAWLER_API_KEY'],
+  baseURL: process.env['WALLCRAWLER_BASE_URL'],
   timeout: 20 * 1000, // 20 seconds (default is 1 minute)
 });
 
@@ -175,7 +245,10 @@ You can also use the `.withResponse()` method to get the raw `Response` along wi
 
 <!-- prettier-ignore -->
 ```ts
-const client = new Browserbase();
+const client = new Wallcrawler({
+  apiKey: process.env['WALLCRAWLER_API_KEY'],
+  baseURL: process.env['WALLCRAWLER_BASE_URL'],
+});
 
 const response = await client.sessions.create({ projectId: 'your_project_id' }).asResponse();
 console.log(response.headers.get('X-My-Header'));
@@ -243,12 +316,12 @@ add the following import before your first import `from "Browserbase"`:
 ```ts
 // Tell TypeScript and the package to use the global web fetch instead of node-fetch.
 // Note, despite the name, this does not add any polyfills, but expects them to be provided if needed.
-import '@browserbasehq/sdk/shims/web';
-import Browserbase from '@browserbasehq/sdk';
+import '@wallcrawler/sdk/shims/web';
+import Wallcrawler from '@wallcrawler/sdk';
 ```
 
-To do the inverse, add `import "@browserbasehq/sdk/shims/node"` (which does import polyfills).
-This can also be useful if you are getting the wrong TypeScript types for `Response` ([more details](https://github.com/browserbase/sdk-node/tree/main/src/_shims#readme)).
+To do the inverse, add `import "@wallcrawler/sdk/shims/node"` (which does import polyfills).
+This can also be useful if you are getting the wrong TypeScript types for `Response`.
 
 ### Logging and middleware
 
@@ -257,9 +330,11 @@ which can be used to inspect or alter the `Request` or `Response` before/after e
 
 ```ts
 import { fetch } from 'undici'; // as one example
-import Browserbase from '@browserbasehq/sdk';
+import Wallcrawler from '@wallcrawler/sdk';
 
-const client = new Browserbase({
+const client = new Wallcrawler({
+  apiKey: process.env['WALLCRAWLER_API_KEY'],
+  baseURL: process.env['WALLCRAWLER_BASE_URL'],
   fetch: async (url: RequestInfo, init?: RequestInit): Promise<Response> => {
     console.log('About to make a request', url, init);
     const response = await fetch(url, init);
@@ -284,7 +359,9 @@ import http from 'http';
 import { HttpsProxyAgent } from 'https-proxy-agent';
 
 // Configure the default for all requests:
-const client = new Browserbase({
+const client = new Wallcrawler({
+  apiKey: process.env['WALLCRAWLER_API_KEY'],
+  baseURL: process.env['WALLCRAWLER_BASE_URL'],
   httpAgent: new HttpsProxyAgent(process.env.PROXY_URL),
 });
 
@@ -307,7 +384,55 @@ This package generally follows [SemVer](https://semver.org/spec/v2.0.0.html) con
 
 We take backwards-compatibility seriously and work hard to ensure you can rely on a smooth upgrade experience.
 
-We are keen for your feedback; please open an [issue](https://www.github.com/browserbase/sdk-node/issues) with questions, bugs, or suggestions.
+We are keen for your feedback; please open an issue in the [Wallcrawler repository](https://github.com/Volpestyle/wallcrawler) with questions, bugs, or suggestions.
+
+## Wallcrawler-Specific Features
+
+### Event-Driven Session Management
+
+Wallcrawler uses AWS EventBridge for reliable session lifecycle management:
+
+```ts
+// Session creation triggers EventBridge events
+const session = await client.sessions.create({ projectId: 'your_project_id' });
+
+// Monitor session status through the retrieve endpoint
+const sessionDetails = await client.sessions.retrieve(session.id);
+console.log(sessionDetails.status); // CREATING → PROVISIONING → READY
+```
+
+### Direct CDP Access
+
+For maximum privacy and performance, use Direct Mode to connect directly to the browser:
+
+```ts
+// Get signed CDP URL
+const cdpUrl = await client.sessions.cdpUrl(session.id);
+
+// Connect directly via WebSocket (no data through Wallcrawler APIs)
+const browser = await chromium.connectOverCDP(cdpUrl.connectUrl);
+```
+
+### WebSocket Streaming
+
+Stream browser viewport in real-time:
+
+```ts
+const streamingSession = await client.sessions.create({
+  projectId: 'your_project_id',
+  streamingEnabled: true
+});
+
+// Connect to streaming WebSocket
+const ws = new WebSocket(streamingSession.streamingUrl);
+ws.on('message', (frame) => {
+  // Handle real-time browser frames
+});
+```
+
+### Deployment Information
+
+This SDK connects to Wallcrawler instances deployed on AWS infrastructure. For deployment instructions, see the [deployment documentation](../../docs/wallcrawler-design-doc.md#deployment).
 
 ## Requirements
 
