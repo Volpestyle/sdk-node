@@ -47,11 +47,19 @@ export interface WallcrawlerOptions extends BaseBrowserClientOptions {
   apiKey?: string | undefined;
 
   /**
+   * AWS API Gateway Key (required for API access).
+   * This key is required by AWS API Gateway for all requests.
+   * Without it, requests will receive 403 Forbidden errors.
+   * Defaults to process.env['WALLCRAWLER_AWS_API_KEY'].
+   */
+  awsApiKey?: string | undefined;
+
+  /**
    * Override the default base URL for the API, e.g., "https://api.example.com/v2/"
    *
-   * Defaults to process.env['WALLCRAWLER_BASE_URL'].
+   * Defaults to process.env['WALLCRAWLER_API_URL'].
    */
-  baseURL?: string | null | undefined;
+  baseURL?: string | undefined;
 }
 
 /**
@@ -132,24 +140,33 @@ export class Browserbase extends BrowserClient {
  * API Client for interfacing with the Wallcrawler API.
  */
 export class Wallcrawler extends BrowserClient {
+  private awsApiKey: string | undefined;
+
   constructor({
-    baseURL = Core.readEnv('WALLCRAWLER_BASE_URL'),
+    baseURL = Core.readEnv('WALLCRAWLER_API_URL'),
+    awsApiKey = Core.readEnv('WALLCRAWLER_AWS_API_KEY'),
     apiKey = Core.readEnv('WALLCRAWLER_API_KEY'),
     ...opts
   }: WallcrawlerOptions = {}) {
-    if (apiKey === undefined) {
+    if (awsApiKey === undefined || apiKey === undefined || baseURL === undefined) {
       throw new Errors.BrowserbaseError(
-        "The WALLCRAWLER_API_KEY environment variable is missing or empty; either provide it, or instantiate the Wallcrawler client with an apiKey option, like new Wallcrawler({ apiKey: 'My API Key' }).",
+        "WALLCRAWLER_AWS_API_KEY, WALLCRAWLER_API_KEY, or WALLCRAWLER_API_URL environment variables are missing or empty; either provide it, or instantiate the Wallcrawler client with an apiKey option, like new Wallcrawler({ apiKey: 'My API Key' }).",
       );
     }
 
-    const options: WallcrawlerOptions & { apiKey: string; baseURL: string } = {
+    const options: WallcrawlerOptions & {
+      baseURL: string;
+      awsApiKey: string;
+      apiKey: string;
+    } = {
+      baseURL,
+      awsApiKey,
       apiKey,
-      baseURL: baseURL || `https://api.wallcrawler.dev/v1`,
       ...opts,
     };
 
     super(options);
+    this.awsApiKey = awsApiKey;
   }
 
   contexts: API.Contexts = new API.Contexts(this as any);
@@ -166,7 +183,8 @@ export class Wallcrawler extends BrowserClient {
   }
 
   protected getAuthHeaders(): Core.Headers {
-    return { 'x-wc-api-key': this.apiKey };
+    const headers: Core.Headers = { 'x-wc-api-key': this.apiKey, 'X-API-Key': this.awsApiKey };
+    return headers;
   }
 
   static Wallcrawler = this;

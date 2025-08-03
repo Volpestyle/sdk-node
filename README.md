@@ -61,7 +61,7 @@ import Wallcrawler from '@wallcrawler/sdk';
 
 const client = new Wallcrawler({
   apiKey: process.env['WALLCRAWLER_API_KEY'], // Your Wallcrawler API key
-  baseURL: process.env['WALLCRAWLER_BASE_URL'], // Your Wallcrawler API base URL
+  baseURL: process.env['WALLCRAWLER_API_URL'], // Your Wallcrawler API base URL
 });
 
 async function main() {
@@ -86,7 +86,7 @@ const stagehand = new Stagehand({
   // Wallcrawler-specific options
   projectId: process.env['WALLCRAWLER_PROJECT_ID'],
   apiKey: process.env['WALLCRAWLER_API_KEY'],
-  baseURL: process.env['WALLCRAWLER_BASE_URL'],
+  baseURL: process.env['WALLCRAWLER_API_URL'],
 });
 
 await stagehand.init();
@@ -107,7 +107,7 @@ import Wallcrawler from '@wallcrawler/sdk';
 
 const client = new Wallcrawler({
   apiKey: process.env['WALLCRAWLER_API_KEY'],
-  baseURL: process.env['WALLCRAWLER_BASE_URL'],
+  baseURL: process.env['WALLCRAWLER_API_URL'],
 });
 
 async function main() {
@@ -136,7 +136,7 @@ import Wallcrawler, { toFile } from '@wallcrawler/sdk';
 
 const client = new Wallcrawler({
   apiKey: process.env['WALLCRAWLER_API_KEY'],
-  baseURL: process.env['WALLCRAWLER_BASE_URL'],
+  baseURL: process.env['WALLCRAWLER_API_URL'],
 });
 
 // If you have access to Node `fs` we recommend using `fs.createReadStream()`:
@@ -202,7 +202,7 @@ You can use the `maxRetries` option to configure or disable this:
 // Configure the default for all requests:
 const client = new Wallcrawler({
   apiKey: process.env['WALLCRAWLER_API_KEY'],
-  baseURL: process.env['WALLCRAWLER_BASE_URL'],
+  baseURL: process.env['WALLCRAWLER_API_URL'],
   maxRetries: 0, // default is 2
 });
 
@@ -221,7 +221,7 @@ Requests time out after 1 minute by default. You can configure this with a `time
 // Configure the default for all requests:
 const client = new Wallcrawler({
   apiKey: process.env['WALLCRAWLER_API_KEY'],
-  baseURL: process.env['WALLCRAWLER_BASE_URL'],
+  baseURL: process.env['WALLCRAWLER_API_URL'],
   timeout: 20 * 1000, // 20 seconds (default is 1 minute)
 });
 
@@ -247,7 +247,7 @@ You can also use the `.withResponse()` method to get the raw `Response` along wi
 ```ts
 const client = new Wallcrawler({
   apiKey: process.env['WALLCRAWLER_API_KEY'],
-  baseURL: process.env['WALLCRAWLER_BASE_URL'],
+  baseURL: process.env['WALLCRAWLER_API_URL'],
 });
 
 const response = await client.sessions.create({ projectId: 'your_project_id' }).asResponse();
@@ -334,7 +334,7 @@ import Wallcrawler from '@wallcrawler/sdk';
 
 const client = new Wallcrawler({
   apiKey: process.env['WALLCRAWLER_API_KEY'],
-  baseURL: process.env['WALLCRAWLER_BASE_URL'],
+  baseURL: process.env['WALLCRAWLER_API_URL'],
   fetch: async (url: RequestInfo, init?: RequestInit): Promise<Response> => {
     console.log('About to make a request', url, init);
     const response = await fetch(url, init);
@@ -361,7 +361,7 @@ import { HttpsProxyAgent } from 'https-proxy-agent';
 // Configure the default for all requests:
 const client = new Wallcrawler({
   apiKey: process.env['WALLCRAWLER_API_KEY'],
-  baseURL: process.env['WALLCRAWLER_BASE_URL'],
+  baseURL: process.env['WALLCRAWLER_API_URL'],
   httpAgent: new HttpsProxyAgent(process.env.PROXY_URL),
 });
 
